@@ -33,10 +33,10 @@ export async function POST(request: NextRequest){
         })
 
 
-        newUser.save().then(() => {
+        await newUser.save().then(() => {
             console.log("User created successfully");
-        }).catch(() => {   
-            console.log("User creation failed");
+        }).catch((error:any) => {   
+            console.log("User creation failed",error.message);
         });
         
         console.log(newUser);

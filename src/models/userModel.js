@@ -1,10 +1,9 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
-    username: {
+const userSchema = new mongoose.Schema({   
+     username: {
         type: String,
-        
-        unique: true,
+        required: true
     },
     email: {
         type: String,
@@ -29,6 +28,8 @@ const userSchema = new mongoose.Schema({
     verifyTokenExpiry: Date,
 })
 
+// Define unique index on the email field
+userSchema.index({ email: 1 }, { unique: true });
 const User = mongoose.models.users || mongoose.model("users", userSchema);
 
 export default User;

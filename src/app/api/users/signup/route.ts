@@ -1,49 +1,62 @@
-import {connect} from '@/connections/dbConfig'
-import User from '@/models/userModel'
-import bcryptjs from 'bcryptjs'
-import { NextRequest, NextResponse } from 'next/server'
-import { sendMail } from '@/helpers/mailHelper'
+import {connect} from "@/dbConfig/dbConfig";
+import User from "@/models/userModel";
+import { NextRequest, NextResponse } from "next/server";
+import bcryptjs from "bcryptjs";
+import { sendEmail } from "@/helpers/mailer";
 
 
 connect()
 
+
 export async function POST(request: NextRequest){
-  try {
-    const reqBody = await request.json();
-    const{username, email, password} = reqBody;
-    // validation
+    try {
+        const reqBody = await request.json()
+        const {username, email, password} = reqBody
+
+        console.log(reqBody);
+
+        //check if user already exists
+        const user = await User.findOne({email})
+
+        if(user){
+            return NextResponse.json({error: "User already exists"}, {status: 400})
+        }
+
+        //hash password
+        const salt = await bcryptjs.genSalt(10)
+        const hashedPassword = await bcryptjs.hash(password, salt)
+        console.log(hashedPassword);
+        const newUser = new User({
+            username,
+            email,
+            password: hashedPassword
+        })
 
 
-    const user = await User.findOne({email})
-    if(user){
-      return NextResponse.json({error: 'User already exists'}, {status: 400})
+        newUser.save().then(() => {
+            console.log("User created successfully");
+        }).catch(() => {   
+            console.log("User creation failed");
+        });
+        
+        console.log(newUser);
+
+        //send verification email
+
+        sendEmail({email, emailType: "VERIFY", userId: newUser._id})
+        console.log("working till heres");
+
+        return NextResponse.json({
+            message: "User created successfully",
+            success: true,
+            newUser
+        })
+        
+        
+
+
+    } catch (error: any) {
+        return NextResponse.json({error: error.message}, {status: 500})
+
     }
-
-    const salt = await bcryptjs.genSalt(10);
-    const hashedPassword = await bcryptjs.hash(password, salt);
-
-    const newUser = new User({
-      username,
-      email,
-      password: hashedPassword
-    }).save()
-
-    console.log(newUser);
-
-    // Send veryfication email
-
-
-    await sendMail({email, emailType: 'VERIFY', userID: newUser._id})
-
-    return NextResponse.json({message: 'User registered successfully',
-      success: true,
-      newUser},
-      {status: 201})
-
-
-
-  } catch (error:any) {
-    return NextResponse.json({error: error.message}, {status: 500})
-    
-  }
 }

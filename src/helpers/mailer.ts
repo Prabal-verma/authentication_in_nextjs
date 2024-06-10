@@ -18,14 +18,14 @@ export const sendEmail = async({email, emailType, userId}:any) => {
         }
         console.log("3");
 
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
+        const transport = nodemailer.createTransport({
+            host: "sandbox.smtp.mailtrap.io",
+            port: 2525,
             auth: {
-                user: 'august72@ethereal.email',
-                pass: 'wAGwu9BhjwqYSsNZpT'
+              user: "106a5f97e4495f",
+              pass: "fe58ceceac1b9d"
             }
-        });
+          });
           console.log("4");
 
 
@@ -39,7 +39,7 @@ export const sendEmail = async({email, emailType, userId}:any) => {
         }
         console.log("5");
 
-        const mailresponse = await transporter.sendMail
+        const mailresponse = await transport.sendMail
         (mailOptions);
         console.log("6");
         return mailresponse;
